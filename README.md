@@ -8,6 +8,7 @@ CloudBeats is a personal cloud music locker built with Flask and Azure Blob Stor
 ![Flask](https://img.shields.io/badge/Flask-2.3-green?logo=flask)
 ![Azure](https://img.shields.io/badge/Azure-Blob%20Storage-0078D4?logo=microsoftazure)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
+![Build and Deploy](https://github.com/srisugumar2003/cloudbeat/actions/workflows/main_cloudbeats-app.yml/badge.svg)
 
 ---
 
@@ -19,6 +20,7 @@ CloudBeats is a personal cloud music locker built with Flask and Azure Blob Stor
 - 📱 **Responsive Design** — Works seamlessly on desktop and mobile
 - 🗑️ **Manage Library** — Delete songs from both cloud storage and database
 - 🔍 **Song Metadata** — Add title, artist, and album info to your uploads
+- 🚀 **CI/CD Integration** — Fully automated deployments to Azure App Service via GitHub Actions
 
 ---
 
@@ -26,11 +28,12 @@ CloudBeats is a personal cloud music locker built with Flask and Azure Blob Stor
 
 | Layer | Technology |
 |---|---|
-| **Backend** | Python, Flask |
+| **Backend** | Python 3.10, Flask |
 | **Storage** | Azure Blob Storage |
-| **Database** | SQLite |
-| **Frontend** | HTML, CSS, Bootstrap 5 |
+| **Database** | SQLite (Metadata) |
+| **Frontend** | HTML5, CSS3, Bootstrap 5 |
 | **Deployment** | Azure App Service (Linux) |
+| **CI/CD** | GitHub Actions |
 
 ---
 
@@ -46,16 +49,28 @@ CloudBeats is a personal cloud music locker built with Flask and Azure Blob Stor
 ### Architecture
 
 ```
-┌──────────────┐     ┌──────────────────┐     ┌─────────────────────┐
-│  Web Browser │◄───►│  Azure App       │◄───►│  Azure Blob Storage │
-│  (Frontend)  │     │  Service (Flask)  │     │  (music-container)  │
-└──────────────┘     └────────┬─────────┘     └─────────────────────┘
-                              │
-                     ┌────────┴─────────┐
-                     │   SQLite (local)  │
-                     │   songs metadata  │
-                     └──────────────────┘
++------------------+     +------------------+     +---------------------+
+|   Web Browser    |<--->|   Flask App      |<--->| Azure Blob Storage  |
+|   (Frontend)     |     |   (Backend)      |     |   (Cloud Storage)   |
++------------------+     +--------+---------+     +---------------------+
+                                  |
+                         +--------+---------+
+                         |     SQLite DB     |
+                         |   (Metadata)      |
+                         +------------------+
 ```
+
+---
+
+## 🚀 CI/CD Pipeline
+
+This project uses **GitHub Actions** for automated deployment to Azure App Service.
+
+- **Trigger**: Every push to the `main` branch.
+- **Build**: Sets up Python environment and packages the application.
+- **Deploy**: Automatically deploys the latest version to the Azure Web App.
+
+Configuration can be found in [.github/workflows/main_cloudbeats-app.yml](.github/workflows/main_cloudbeats-app.yml).
 
 ---
 
