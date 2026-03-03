@@ -127,12 +127,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-## 📝 License
-
-Licensed under the [MIT License](LICENSE).
-
----
-
 <p align="center">
   Built with ❤️ by <a href="https://github.com/srisugumar2003">srisugumar2003</a>
 </p>
