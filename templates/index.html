@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎶 CloudBeats</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container-fluid p-0 d-flex flex-column min-vh-100">
+        <!-- Header -->
+        <header class="text-white py-3">
+            <div class="container-fluid px-4 px-lg-5">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-cloud me-3 text-white" style="font-size: 2rem;"></i>
+                        <div>
+                            <h1 class="mb-0" style="font-size: 1.75rem; font-weight: 700; letter-spacing: -0.5px;">
+                                CloudBeats
+                            </h1>
+                            <p class="mb-0" style="color: rgba(255,255,255,0.7); font-size: 0.85rem;">Music streaming,
+                                simplified</p>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button id="themeToggle" class="theme-toggle" onclick="toggleTheme()">
+                            <i class="fas fa-moon"></i> Dark
+                        </button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="fas fa-upload me-2"></i>Upload Song
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="container-fluid px-4 px-lg-5">
+            {% for message in messages %}
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Main Content -->
+        <div class="container-fluid px-4 px-lg-5 py-3 flex-grow-1" style="background-color: var(--bg-light);">
+            <!-- Music Player -->
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="card player-card">
+                        <div class="card-body py-3 px-4">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="album-art flex-shrink-0">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                                <div class="flex-shrink-0" style="min-width: 180px;">
+                                    <h6 class="song-title mb-0">Select a song to play</h6>
+                                    <small class="song-artist text-muted">No song selected</small>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <audio id="audioPlayer" controls class="w-100" preload="metadata">
+                                        <source src="" type="audio/mpeg">
+                                        <source src="" type="audio/wav">
+                                        <source src="" type="audio/ogg">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Songs List -->
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Your Music Library
+                            </h5>
+                            <span class="badge bg-primary">{{ songs|length }} songs</span>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if songs %}
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead class="table-light-header">
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Artist</th>
+                                            <th>Album</th>
+                                            <th>Upload Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for song in songs %}
+                                        <tr class="song-row" data-song-id="{{ song[0] }}">
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <i class="fas fa-music me-2 text-muted"></i>
+                                                    <div>
+                                                        <div class="fw-bold">{{ song[2] or song[1] }}</div>
+                                                        <small class="text-muted">{{ song[1] }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ song[3] or 'Unknown Artist' }}</td>
+                                            <td>{{ song[4] or 'Unknown Album' }}</td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ song[6].split(' ')[0] if song[6] else 'Unknown' }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-outline-primary play-btn"
+                                                        data-song-id="{{ song[0] }}"
+                                                        data-title="{{ song[2] or song[1] }}"
+                                                        data-artist="{{ song[3] or 'Unknown Artist' }}">
+                                                        <i class="fas fa-play"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-danger delete-btn"
+                                                        data-song-id="{{ song[0] }}"
+                                                        data-title="{{ song[2] or song[1] }}">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-music fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No songs in your library yet</h5>
+                                <p class="text-muted">Upload your first song to get started!</p>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                                    <i class="fas fa-upload me-2"></i>Upload Song
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-upload me-2"></i>Upload New Song
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="file" class="form-label">Audio File</label>
+                            <input type="file" class="form-control" id="file" name="file" accept=".mp3,.wav,.m4a,.ogg"
+                                required>
+                            <div class="form-text">Supported formats: MP3, WAV, M4A, OGG</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title"
+                                placeholder="Enter song title">
+                        </div>
+                        <div class="mb-3">
+                            <label for="artist" class="form-label">Artist</label>
+                            <input type="text" class="form-control" id="artist" name="artist"
+                                placeholder="Enter artist name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="album" class="form-label">Album</label>
+                            <input type="text" class="form-control" id="album" name="album"
+                                placeholder="Enter album name">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-upload me-2"></i>Upload
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Confirm Delete
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong id="deleteSongTitle"></strong>?</p>
+                    <p class="text-muted">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Play button functionality
+        document.querySelectorAll('.play-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const songId = this.dataset.songId;
+                const title = this.dataset.title;
+                const artist = this.dataset.artist;
+
+                // Update player info
+                document.querySelector('.song-title').textContent = title;
+                document.querySelector('.song-artist').textContent = artist;
+
+                // Get song URL and play
+                fetch(`/play/${songId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Song data:', data);
+                        if (data.url) {
+                            const audioPlayer = document.getElementById('audioPlayer');
+                            console.log('Setting audio source to:', data.url);
+                            audioPlayer.src = data.url;
+
+                            // Add event listeners for debugging
+                            audioPlayer.addEventListener('loadstart', () => console.log('Audio loading started'));
+                            audioPlayer.addEventListener('canplay', () => console.log('Audio can play'));
+                            audioPlayer.addEventListener('error', (e) => console.error('Audio error:', e));
+
+                            // Try to play
+                            audioPlayer.play().then(() => {
+                                console.log('Audio started playing');
+                            }).catch(error => {
+                                console.error('Play failed:', error);
+                                alert('Could not play audio: ' + error.message);
+                            });
+                        } else {
+                            console.error('No URL in response:', data);
+                            alert('Error loading song: No URL provided');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error);
+                        alert('Error loading song: ' + error.message);
+                    });
+            });
+        });
+
+        // Delete button functionality
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const songId = this.dataset.songId;
+                const title = this.dataset.title;
+
+                document.getElementById('deleteSongTitle').textContent = title;
+                document.getElementById('deleteForm').action = `/delete/${songId}`;
+
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                deleteModal.show();
+            });
+        });
+
+        // Auto-fill title from filename
+        document.getElementById('file').addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const titleInput = document.getElementById('title');
+                if (!titleInput.value) {
+                    const filename = file.name;
+                    const title = filename.substring(0, filename.lastIndexOf('.')) || filename;
+                    titleInput.value = title;
+                }
+            }
+        });
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateToggleButton(newTheme);
+        }
+
+        function updateToggleButton(theme) {
+            const btn = document.getElementById('themeToggle');
+            if (theme === 'dark') {
+                btn.innerHTML = '<i class="fas fa-sun"></i> Light';
+            } else {
+                btn.innerHTML = '<i class="fas fa-moon"></i> Dark';
+            }
+        }
+
+        // Load saved theme on page load
+        (function () {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateToggleButton(savedTheme);
+        })();
+    </script>
+</body>
+
+</html>
