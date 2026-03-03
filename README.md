@@ -118,6 +118,14 @@ cloudbeat/
 ├── templates/             # HTML UI templates
 └── env.example            # Template for environment configuration
 ```
+##Screen shorts
+
+![WhatsApp Image 2026-03-03 at 3 42 42 PM](https://github.com/user-attachments/assets/88922b58-1846-47ad-990d-67b3e2d5a845)
+
+![WhatsApp Image 2026-03-03 at 3 42 44 PM](https://github.com/user-attachments/assets/1d8edda4-b212-4f7b-bb5e-952b9cd80376)
+
+![WhatsApp Image 2026-03-03 at 3 42 41 PM](https://github.com/user-attachments/assets/3467f732-3eae-43a4-8200-d06262a81a8d)
+
 
 <p align="center">
   Built with ❤️ by <a href="https://github.com/srisugumar2003">srisugumar2003</a>
