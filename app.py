@@ -22,7 +22,12 @@ try:
 except ImportError:
     print("WARNING: python-dotenv not available. Using system environment variables only.")
 
-app = Flask(__name__)
+# Configure directories for production
+base_dir = os.path.abspath(os.path.dirname(__file__))
+template_dir = os.path.join(base_dir, 'templates')
+static_dir = os.path.join(base_dir, 'static')
+
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 app.secret_key = 'your-secret-key-change-this'
 
 # Azure Storage setup
@@ -109,6 +114,13 @@ def upload_to_azure(file_path, filename):
 @app.route('/')
 def index():
     """Main page showing upload form and song list"""
+    # Debug print for Azure logs
+    print(f"DEBUG: Working directory: {os.getcwd()}")
+    print(f"DEBUG: Base dir: {base_dir}")
+    print(f"DEBUG: Template dir exists: {os.path.exists(template_dir)}")
+    if os.path.exists(template_dir):
+        print(f"DEBUG: Templates content: {os.listdir(template_dir)}")
+
     conn = sqlite3.connect(DB)
     songs = conn.execute("""
         SELECT id, original_name, title, artist, album, duration, upload_date, blob_url, local_path
