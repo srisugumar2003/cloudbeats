@@ -34,6 +34,31 @@ CloudBeats is a personal cloud music locker built with Flask and Azure Blob Stor
 
 ---
 
+## ☁️ Azure Services Used
+
+| Service | Purpose | Usage in Project | Pricing |
+|---|---|---|---|
+| **Azure Storage Account** | Parent resource for cloud storage | Holds the blob container for music files | Free tier available |
+| **Azure Blob Storage** | Store and serve audio files | Uploads, streams, and deletes music files via `azure-storage-blob` SDK | 5 GB free |
+| **Azure App Service** | Host the web application | Runs the Flask app on a Linux server with Gunicorn | F1 Free Tier (1 GB RAM) |
+| **Azure Resource Group** | Organize all Azure resources | Groups storage account and app service together | Free |
+
+### Architecture
+
+```
+┌──────────────┐     ┌──────────────────┐     ┌─────────────────────┐
+│  Web Browser │◄───►│  Azure App       │◄───►│  Azure Blob Storage │
+│  (Frontend)  │     │  Service (Flask)  │     │  (music-container)  │
+└──────────────┘     └────────┬─────────┘     └─────────────────────┘
+                              │
+                     ┌────────┴─────────┐
+                     │   SQLite (local)  │
+                     │   songs metadata  │
+                     └──────────────────┘
+```
+
+---
+
 ## 🚀 Getting Started
 
 ### Prerequisites
