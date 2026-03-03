@@ -1,272 +1,168 @@
-# 🎶 Cloud Music Locker (Mini Spotify)
+# ☁️ CloudBeats
 
-A personal cloud music library where users can upload songs (MP3s) and stream them from anywhere using AWS services.
+**Music streaming, simplified.**
 
-## 🌟 Features
+CloudBeats is a personal cloud music locker built with Flask and Azure Blob Storage. Upload, store, and stream your music from anywhere.
 
-- ✅ **Upload MP3 files** - Support for MP3, WAV, M4A, and OGG formats
-- ✅ **Cloud Storage** - Store songs securely in AWS S3
-- ✅ **Stream Music** - Play songs directly in browser via HTML5 audio player
-- ✅ **Music Library** - List available songs with metadata (title, artist, album)
-- ✅ **Modern UI** - Spotify-like interface with responsive design
-- ✅ **Free Tier Friendly** - Uses EC2 + S3 only (stays within AWS free tier limits)
-- ✅ **Local Fallback** - Works without AWS S3 (stores files locally)
+![Python](https://img.shields.io/badge/Python-3.10-blue)
+![Flask](https://img.shields.io/badge/Flask-2.3-green)
+![Azure](https://img.shields.io/badge/Azure-Blob%20Storage-0078D4)
 
-## 🏗️ Architecture
+---
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Web Browser   │◄──►│   Flask App     │◄──►│   AWS S3        │
-│   (Frontend)    │    │   (EC2)         │    │   (Storage)     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌─────────────────┐
-                       │   SQLite DB     │
-                       │   (Metadata)    │
-                       └─────────────────┘
-```
+## ✨ Features
 
-## 🚀 Quick Start
+- 🎵 **Upload & Stream** — Upload MP3, WAV, M4A, OGG files and play them in-browser
+- ☁️ **Azure Blob Storage** — Files are stored securely in Azure cloud
+- 🌙 **Dark/Light Theme** — Toggle between light blue and dark themes (persisted in browser)
+- 📱 **Responsive Design** — Works on desktop, tablet, and mobile
+- 🗑️ **Manage Library** — Delete songs from both cloud storage and local database
+- 🔍 **Auto-fill Metadata** — Title auto-fills from filename on upload
 
-### 1. Clone and Setup
+---
 
-```bash
-git clone <your-repo-url>
-cd cloud-music-locker
-pip install -r requirements.txt
-```
+## 🛠️ Tech Stack
 
-### 2. AWS Configuration (Optional)
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | Python, Flask |
+| **Database** | SQLite |
+| **Cloud Storage** | Azure Blob Storage |
+| **Frontend** | HTML5, CSS3, Bootstrap 5, Font Awesome |
+| **Server** | Gunicorn (production) |
 
-Create a `.env` file in the project root:
+---
 
-```env
-AWS_ACCESS_KEY_ID=your_access_key_here
-AWS_SECRET_ACCESS_KEY=your_secret_key_here
-AWS_REGION=us-east-1
-S3_BUCKET=your-music-bucket-name
-```
+## 🚀 Getting Started
 
-**Note:** If you don't configure AWS credentials, the app will work in local mode (files stored locally).
+### Prerequisites
 
-### 3. Run the Application
+- Python 3.10+
+- Azure Storage Account ([create one here](https://portal.azure.com))
 
-```bash
-python app.py
-```
+### Installation
 
-Visit `http://localhost:5000` to access your music locker!
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/srisugumar2003/cloudbeat.git
+   cd cloudbeat
+   ```
 
-## 🛠️ AWS Setup (Free Tier)
+2. **Create a virtual environment**
+   ```bash
+   python -m venv venv
+   # Windows
+   venv\Scripts\activate
+   # Linux/Mac
+   source venv/bin/activate
+   ```
 
-### 1. Create S3 Bucket
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-1. Go to AWS S3 Console
-2. Create a new bucket (e.g., `my-music-bucket-123`)
-3. Configure bucket for public read access (for streaming)
-4. Note the bucket name for your `.env` file
+4. **Configure environment variables**
+   ```bash
+   cp env.example .env
+   ```
+   Edit `.env` and add your Azure Storage connection string:
+   ```env
+   AZURE_STORAGE_CONNECTION_STRING=your_connection_string_here
+   AZURE_STORAGE_CONTAINER_NAME=music-container
+   ```
 
-### 2. Create IAM User
+5. **Verify Azure connection**
+   ```bash
+   python verify_azure.py
+   ```
 
-1. Go to AWS IAM Console
-2. Create a new user with programmatic access
-3. Attach policy: `AmazonS3FullAccess`
-4. Save the Access Key ID and Secret Access Key
+6. **Run the application**
+   ```bash
+   python app.py
+   ```
+   Open `http://localhost:5000` in your browser.
 
-### 3. Launch EC2 Instance
-
-1. Launch a t2.micro instance (free tier eligible)
-2. Install Python 3.8+ and pip
-3. Clone your repository
-4. Install dependencies: `pip install -r requirements.txt`
-5. Run the application: `python app.py`
+---
 
 ## 📁 Project Structure
 
 ```
-cloud-music-locker/
-├── app.py                 # Flask backend application
-├── templates/
-│   └── index.html        # Main UI template
+cloudbeat/
+├── app.py                 # Flask application (routes, Azure integration)
+├── requirements.txt       # Python dependencies
+├── verify_azure.py        # Azure connection verification script
+├── deploy_to_azure.sh     # Azure App Service deployment script
+├── deploy.bat             # Windows local setup script
+├── env.example            # Environment variables template
+├── .gitignore             # Git ignore rules
+├── songs.db               # SQLite database (auto-generated)
+├── uploads/               # Local file uploads (auto-generated)
 ├── static/
-│   └── style.css         # Custom styling
-├── uploads/              # Local file storage (if not using S3)
-├── songs.db              # SQLite database (auto-created)
-├── requirements.txt      # Python dependencies
-├── .env                  # Environment variables (create this)
-└── README.md            # This file
+│   └── style.css          # Custom styles (light/dark themes)
+└── templates/
+    └── index.html         # Main UI template
 ```
 
-## 🎵 Usage
+---
 
-### Uploading Songs
+## ☁️ Deploy to Azure App Service
 
-1. Click the "Upload Song" button
-2. Select an audio file (MP3, WAV, M4A, OGG)
-3. Optionally fill in title, artist, and album information
-4. Click "Upload"
+```bash
+# Create resources
+az group create --name cloudbeats-rg --location eastus
+az appservice plan create --name cloudbeats-plan --resource-group cloudbeats-rg --sku F1 --is-linux
+az webapp create --resource-group cloudbeats-rg --plan cloudbeats-plan --name cloudbeats-app --runtime "PYTHON:3.10"
 
-### Playing Music
+# Set environment variables
+az webapp config appsettings set --resource-group cloudbeats-rg --name cloudbeats-app \
+    --settings AZURE_STORAGE_CONNECTION_STRING="your_connection_string" \
+    AZURE_STORAGE_CONTAINER_NAME="music-container"
 
-1. Browse your music library in the table
-2. Click the play button (▶️) next to any song
-3. Use the audio controls to play, pause, and seek
+# Deploy
+az webapp up --name cloudbeats-app --resource-group cloudbeats-rg --runtime "PYTHON:3.10"
 
-### Managing Songs
-
-- **Play**: Click the play button to start playback
-- **Delete**: Click the trash button to remove songs
-- **View Details**: Hover over songs to see metadata
-
-## 💰 Free Tier Considerations
-
-### AWS Free Tier Limits (12 months)
-
-- **EC2 (t2.micro)**: 750 hours/month
-- **S3**: 5GB storage, 20,000 GET requests, 2,000 PUT requests
-- **Data Transfer**: 15GB out per month
-- **EBS**: 30GB storage
-
-### Estimated Usage
-
-- **Storage**: ~100 songs (5GB) = 1,000 MP3s at 5MB each
-- **Streaming**: ~500 hours of music per month
-- **Uploads**: ~2,000 songs per month
-
-**Result**: Perfect for personal use within free tier limits!
-
-## 🔧 Configuration Options
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `S3_BUCKET` | AWS S3 bucket name | `my-music-bucket-123` |
-| `AWS_ACCESS_KEY_ID` | AWS access key | None (local mode) |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key | None (local mode) |
-| `AWS_REGION` | AWS region | `us-east-1` |
-
-### Supported Audio Formats
-
-- MP3 (`.mp3`)
-- WAV (`.wav`)
-- M4A (`.m4a`)
-- OGG (`.ogg`)
-
-## 🚀 Deployment
-
-### Production Deployment
-
-1. **Use Gunicorn**:
-   ```bash
-   gunicorn -w 4 -b 0.0.0.0:80 app:app
-   ```
-
-2. **Set up reverse proxy** (Nginx):
-   ```nginx
-   server {
-       listen 80;
-       location / {
-           proxy_pass http://127.0.0.1:80;
-       }
-   }
-   ```
-
-3. **Configure SSL** (Let's Encrypt):
-   ```bash
-   sudo certbot --nginx -d yourdomain.com
-   ```
-
-### Docker Deployment
-
-Create a `Dockerfile`:
-
-```dockerfile
-FROM python:3.9-slim
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-COPY . .
-EXPOSE 5000
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
+# Set startup command
+az webapp config set --resource-group cloudbeats-rg --name cloudbeats-app \
+    --startup-file "gunicorn --bind=0.0.0.0 --timeout 600 app:app"
 ```
 
-## 🔒 Security Considerations
+---
 
-- **File Validation**: Only audio files are accepted
-- **Secure Filenames**: UUIDs prevent path traversal
-- **AWS IAM**: Use least-privilege access
-- **HTTPS**: Always use SSL in production
-- **Input Sanitization**: All user inputs are sanitized
+## 📸 Screenshots
 
-## 🐛 Troubleshooting
+| Light Theme | Dark Theme |
+|-------------|------------|
+| Light blue UI with white cards | Deep navy with soft blue accents |
 
-### Common Issues
+---
 
-1. **"AWS credentials not found"**
-   - Check your `.env` file
-   - Verify AWS credentials are correct
-   - App will work in local mode without AWS
+## 📄 API Endpoints
 
-2. **"Permission denied" on S3**
-   - Check IAM user permissions
-   - Verify bucket policy allows public read
-   - Ensure bucket name is correct
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/` | Main page with music library |
+| `POST` | `/upload` | Upload a new song |
+| `GET` | `/play/<id>` | Get song URL for playback |
+| `POST` | `/delete/<id>` | Delete a song |
+| `GET` | `/api/songs` | Get all songs as JSON |
 
-3. **Audio won't play**
-   - Check browser console for errors
-   - Verify file format is supported
-   - Check S3 bucket CORS configuration
-
-### S3 CORS Configuration
-
-Add this CORS configuration to your S3 bucket:
-
-```json
-[
-    {
-        "AllowedHeaders": ["*"],
-        "AllowedMethods": ["GET", "HEAD"],
-        "AllowedOrigins": ["*"],
-        "ExposeHeaders": []
-    }
-]
-```
-
-## 🚀 Future Enhancements
-
-- [ ] **User Authentication** - Multi-user support
-- [ ] **Playlists** - Create and manage playlists
-- [ ] **Search & Filter** - Find songs by title, artist, album
-- [ ] **Mobile App** - React Native or Flutter app
-- [ ] **Music Metadata** - Auto-extract from MP3 tags
-- [ ] **Streaming Optimization** - Adaptive bitrate streaming
-- [ ] **Social Features** - Share playlists with friends
-- [ ] **Offline Mode** - Download songs for offline listening
-
-## 📄 License
-
-This project is open source and available under the [MIT License](LICENSE).
+---
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📞 Support
-
-If you encounter any issues or have questions:
-
-1. Check the troubleshooting section
-2. Search existing issues
-3. Create a new issue with detailed information
+2. Create a feature branch (`git checkout -b feature/awesome`)
+3. Commit your changes (`git commit -m 'Add awesome feature'`)
+4. Push to the branch (`git push origin feature/awesome`)
+5. Open a Pull Request
 
 ---
 
-**Happy Listening! 🎵**
+## 📝 License
 
-*Built with ❤️ using Flask, AWS S3, and modern web technologies.*
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+Made with ❤️ by [srisugumar2003](https://github.com/srisugumar2003)
