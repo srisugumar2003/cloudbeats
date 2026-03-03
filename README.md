@@ -119,14 +119,6 @@ cloudbeat/
 └── env.example            # Template for environment configuration
 ```
 
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
 <p align="center">
   Built with ❤️ by <a href="https://github.com/srisugumar2003">srisugumar2003</a>
 </p>
