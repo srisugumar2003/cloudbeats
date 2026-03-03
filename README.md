@@ -4,32 +4,33 @@
 
 CloudBeats is a personal cloud music locker built with Flask and Azure Blob Storage. Upload, store, and stream your music from anywhere.
 
-![Python](https://img.shields.io/badge/Python-3.10-blue)
-![Flask](https://img.shields.io/badge/Flask-2.3-green)
-![Azure](https://img.shields.io/badge/Azure-Blob%20Storage-0078D4)
+![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
+![Flask](https://img.shields.io/badge/Flask-2.3-green?logo=flask)
+![Azure](https://img.shields.io/badge/Azure-Blob%20Storage-0078D4?logo=microsoftazure)
+![License](https://img.shields.io/badge/License-MIT-yellow)
 
 ---
 
 ## ✨ Features
 
-- 🎵 **Upload & Stream** — Upload MP3, WAV, M4A, OGG files and play them in-browser
+- 🎵 **Upload & Stream** — Upload MP3, WAV, M4A, OGG files and stream directly from the browser
 - ☁️ **Azure Blob Storage** — Files are stored securely in Azure cloud
-- 🌙 **Dark/Light Theme** — Toggle between light blue and dark themes (persisted in browser)
-- 📱 **Responsive Design** — Works on desktop, tablet, and mobile
-- 🗑️ **Manage Library** — Delete songs from both cloud storage and local database
-- 🔍 **Auto-fill Metadata** — Title auto-fills from filename on upload
+- 🌗 **Dark / Light Theme** — Toggle between light blue and dark themes (persists across sessions)
+- 📱 **Responsive Design** — Works seamlessly on desktop and mobile
+- 🗑️ **Manage Library** — Delete songs from both cloud storage and database
+- 🔍 **Song Metadata** — Add title, artist, and album info to your uploads
 
 ---
 
 ## 🛠️ Tech Stack
 
 | Layer | Technology |
-|-------|-----------|
+|---|---|
 | **Backend** | Python, Flask |
+| **Storage** | Azure Blob Storage |
 | **Database** | SQLite |
-| **Cloud Storage** | Azure Blob Storage |
-| **Frontend** | HTML5, CSS3, Bootstrap 5, Font Awesome |
-| **Server** | Gunicorn (production) |
+| **Frontend** | HTML, CSS, Bootstrap 5 |
+| **Deployment** | Azure App Service (Linux) |
 
 ---
 
@@ -38,77 +39,62 @@ CloudBeats is a personal cloud music locker built with Flask and Azure Blob Stor
 ### Prerequisites
 
 - Python 3.10+
-- Azure Storage Account ([create one here](https://portal.azure.com))
+- Azure Storage Account ([create one](https://portal.azure.com))
+- Git
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/srisugumar2003/cloudbeat.git
-   cd cloudbeat
-   ```
+```bash
+# Clone the repository
+git clone https://github.com/srisugumar2003/cloudbeat.git
+cd cloudbeat
 
-2. **Create a virtual environment**
-   ```bash
-   python -m venv venv
-   # Windows
-   venv\Scripts\activate
-   # Linux/Mac
-   source venv/bin/activate
-   ```
+# Create virtual environment
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # macOS/Linux
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Configure environment variables**
-   ```bash
-   cp env.example .env
-   ```
-   Edit `.env` and add your Azure Storage connection string:
-   ```env
-   AZURE_STORAGE_CONNECTION_STRING=your_connection_string_here
-   AZURE_STORAGE_CONTAINER_NAME=music-container
-   ```
-
-5. **Verify Azure connection**
-   ```bash
-   python verify_azure.py
-   ```
-
-6. **Run the application**
-   ```bash
-   python app.py
-   ```
-   Open `http://localhost:5000` in your browser.
-
----
-
-## 📁 Project Structure
-
+# Install dependencies
+pip install -r requirements.txt
 ```
-cloudbeat/
-├── app.py                 # Flask application (routes, Azure integration)
-├── requirements.txt       # Python dependencies
-├── verify_azure.py        # Azure connection verification script
-├── deploy_to_azure.sh     # Azure App Service deployment script
-├── deploy.bat             # Windows local setup script
-├── env.example            # Environment variables template
-├── .gitignore             # Git ignore rules
-├── songs.db               # SQLite database (auto-generated)
-├── uploads/               # Local file uploads (auto-generated)
-├── static/
-│   └── style.css          # Custom styles (light/dark themes)
-└── templates/
-    └── index.html         # Main UI template
+
+### Configuration
+
+Create a `.env` file in the root directory:
+
+```env
+# Azure Configuration
+AZURE_STORAGE_CONNECTION_STRING=your_connection_string_here
+AZURE_STORAGE_CONTAINER_NAME=music-container
+
+# Flask Configuration
+FLASK_ENV=production
+FLASK_DEBUG=False
+SECRET_KEY=your-secret-key-here
 ```
+
+### Verify Azure Connection
+
+```bash
+python verify_azure.py
+```
+
+### Run Locally
+
+```bash
+python app.py
+```
+
+Open **http://localhost:5000** in your browser.
 
 ---
 
 ## ☁️ Deploy to Azure App Service
 
 ```bash
+# Login to Azure
+az login
+
 # Create resources
 az group create --name cloudbeats-rg --location eastus
 az appservice plan create --name cloudbeats-plan --resource-group cloudbeats-rg --sku F1 --is-linux
@@ -129,40 +115,43 @@ az webapp config set --resource-group cloudbeats-rg --name cloudbeats-app \
 
 ---
 
-## 📸 Screenshots
+## 📁 Project Structure
 
-| Light Theme | Dark Theme |
-|-------------|------------|
-| Light blue UI with white cards | Deep navy with soft blue accents |
-
----
-
-## 📄 API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/` | Main page with music library |
-| `POST` | `/upload` | Upload a new song |
-| `GET` | `/play/<id>` | Get song URL for playback |
-| `POST` | `/delete/<id>` | Delete a song |
-| `GET` | `/api/songs` | Get all songs as JSON |
+```
+cloudbeat/
+├── app.py                 # Flask application (routes, Azure integration)
+├── requirements.txt       # Python dependencies
+├── verify_azure.py        # Azure connection verification script
+├── deploy_to_azure.sh     # Azure deployment script (Linux/macOS)
+├── deploy.bat             # Local setup script (Windows)
+├── env.example            # Environment variables template
+├── .gitignore             # Git ignore rules
+├── static/
+│   └── style.css          # Custom styles (light/dark theme)
+├── templates/
+│   └── index.html         # Main UI template
+├── uploads/               # Local file storage (git-ignored)
+└── songs.db               # SQLite database (git-ignored)
+```
 
 ---
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/awesome`)
-3. Commit your changes (`git commit -m 'Add awesome feature'`)
-4. Push to the branch (`git push origin feature/awesome`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
 ---
 
 ## 📝 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the MIT License.
 
 ---
 
-Made with ❤️ by [srisugumar2003](https://github.com/srisugumar2003)
+<p align="center">
+  Built with ❤️ by <a href="https://github.com/srisugumar2003">srisugumar2003</a>
+</p>
