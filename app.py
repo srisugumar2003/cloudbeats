@@ -74,7 +74,7 @@ def init_db():
             duration INTEGER,
             file_size INTEGER,
             upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            s3_url TEXT, -- Renamed to s3_url for compatibility but stores Azure Blob URL
+            blob_url TEXT,
             local_path TEXT
         )
     """)
@@ -111,7 +111,7 @@ def index():
     """Main page showing upload form and song list"""
     conn = sqlite3.connect(DB)
     songs = conn.execute("""
-        SELECT id, original_name, title, artist, album, duration, upload_date, s3_url, local_path
+        SELECT id, original_name, title, artist, album, duration, upload_date, blob_url, local_path
         FROM songs 
         ORDER BY upload_date DESC
     """).fetchall()
@@ -150,14 +150,14 @@ def upload_file():
         album = request.form.get('album', 'Unknown Album')
         
         # Upload to Azure if available
-        s3_url = upload_to_azure(local_path, unique_filename)
+        blob_url = upload_to_azure(local_path, unique_filename)
         
         # Save to database
         conn = sqlite3.connect(DB)
         conn.execute("""
-            INSERT INTO songs (filename, original_name, title, artist, album, file_size, s3_url, local_path)
+            INSERT INTO songs (filename, original_name, title, artist, album, file_size, blob_url, local_path)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (unique_filename, original_name, title, artist, album, file_size, s3_url, local_path))
+        """, (unique_filename, original_name, title, artist, album, file_size, blob_url, local_path))
         conn.commit()
         conn.close()
         
@@ -172,15 +172,15 @@ def play_song(song_id):
     """Get song URL for playback"""
     conn = sqlite3.connect(DB)
     song = conn.execute("""
-        SELECT s3_url, local_path, original_name 
+        SELECT blob_url, local_path, original_name 
         FROM songs 
         WHERE id = ?
     """, (song_id,)).fetchone()
     conn.close()
     
     if song:
-        # Prefer S3 URL if available, otherwise serve local file
-        if song[0]:  # s3_url
+        # Prefer Azure Blob URL if available, otherwise serve local file
+        if song[0]:  # blob_url
             return jsonify({'url': song[0], 'name': song[2]})
         else:  # local_path
             return jsonify({'url': url_for('serve_file', filename=os.path.basename(song[1])), 'name': song[2]})

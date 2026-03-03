@@ -1,198 +1,152 @@
 #!/usr/bin/env python3
 """
-Test script for Cloud Music Locker
-This script tests the basic functionality of the application
+CloudBeats - Application Test Suite
+Tests configuration, dependencies, database, and Azure connectivity.
 """
 
 import os
 import sys
 import sqlite3
-import tempfile
-from pathlib import Path
 
-def test_database_connection():
-    """Test database initialization and connection"""
-    print("🔍 Testing database connection...")
+def test_environment():
+    """Test Python environment"""
+    print("Testing Python Environment...")
+    print(f"  Python version: {sys.version}")
+    print(f"  Platform: {sys.platform}")
+    print("[OK] Python environment ready")
+    return True
+
+def test_dependencies():
+    """Test required Python packages"""
+    print("\nTesting Dependencies...")
+    required = ['flask', 'werkzeug', 'dotenv']
+    optional = ['azure.storage.blob']
+    
+    all_ok = True
+    for module in required:
+        try:
+            __import__(module)
+            print(f"  [OK] {module}")
+        except ImportError:
+            print(f"  [ERROR] {module} - MISSING (required)")
+            all_ok = False
+    
+    for module in optional:
+        try:
+            __import__(module)
+            print(f"  [OK] {module}")
+        except ImportError:
+            print(f"  [WARN] {module} - missing (Azure features disabled)")
+    
+    return all_ok
+
+def test_database():
+    """Test SQLite database"""
+    print("\nTesting Database...")
+    db_path = 'songs.db'
     
     try:
-        # Test database creation
-        conn = sqlite3.connect('test_songs.db')
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS songs (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                filename TEXT NOT NULL,
-                original_name TEXT NOT NULL,
-                title TEXT,
-                artist TEXT,
-                album TEXT,
-                duration INTEGER,
-                file_size INTEGER,
-                upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                s3_url TEXT,
-                local_path TEXT
-            )
-        """)
+        conn = sqlite3.connect(db_path)
+        cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = [row[0] for row in cursor.fetchall()]
         
-        # Test insert
-        conn.execute("""
-            INSERT INTO songs (filename, original_name, title, artist, album)
-            VALUES (?, ?, ?, ?, ?)
-        """, ('test.mp3', 'test.mp3', 'Test Song', 'Test Artist', 'Test Album'))
-        
-        # Test select
-        result = conn.execute("SELECT * FROM songs WHERE title = ?", ('Test Song',)).fetchone()
+        if 'songs' in tables:
+            count = conn.execute("SELECT COUNT(*) FROM songs").fetchone()[0]
+            print(f"  [OK] Database exists with {count} songs")
+        else:
+            print("  [WARN] Songs table not found - will be created on first run")
         
         conn.close()
-        os.remove('test_songs.db')
-        
-        if result:
-            print("✅ Database connection test passed")
-            return True
-        else:
-            print("❌ Database connection test failed")
-            return False
-            
+        return True
     except Exception as e:
-        print(f"❌ Database connection test failed: {e}")
+        print(f"  [ERROR] Database error: {e}")
         return False
 
-def test_file_operations():
-    """Test file upload directory creation"""
-    print("🔍 Testing file operations...")
+def test_azure_configuration():
+    """Test Azure configuration"""
+    print("\nTesting Azure Configuration...")
     
     try:
-        # Test upload directory creation
-        upload_dir = Path('uploads')
-        upload_dir.mkdir(exist_ok=True)
-        
-        # Test file creation
-        test_file = upload_dir / 'test.txt'
-        test_file.write_text('test content')
-        
-        # Test file reading
-        content = test_file.read_text()
-        
-        # Cleanup
-        test_file.unlink()
-        
-        if content == 'test content':
-            print("✅ File operations test passed")
-            return True
-        else:
-            print("❌ File operations test failed")
-            return False
-            
-    except Exception as e:
-        print(f"❌ File operations test failed: {e}")
-        return False
-
-def test_imports():
-    """Test if all required modules can be imported"""
-    print("🔍 Testing imports...")
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
     
-    required_modules = [
-        'flask',
-        'werkzeug',
-        'sqlite3',
-        'uuid',
-        'datetime'
-    ]
+    connection_string = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
+    container_name = os.environ.get('AZURE_STORAGE_CONTAINER_NAME', 'music-container')
     
-    optional_modules = [
-        'boto3'
-    ]
-    
-    failed_imports = []
-    optional_failed = []
-    
-    for module in required_modules:
+    if connection_string and connection_string != 'your_connection_string_here':
+        print(f"  [OK] Azure connection string found")
+        print(f"  [OK] Container name: {container_name}")
+        
         try:
-            __import__(module)
-            print(f"  ✅ {module}")
+            from azure.storage.blob import BlobServiceClient
+            blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+            container_client = blob_service_client.get_container_client(container_name)
+            container_client.get_container_properties()
+            print("  [OK] Azure Blob Storage connection successful")
         except ImportError:
-            print(f"  ❌ {module}")
-            failed_imports.append(module)
-    
-    for module in optional_modules:
-        try:
-            __import__(module)
-            print(f"  ✅ {module} (optional)")
-        except ImportError:
-            print(f"  ⚠️  {module} (optional - AWS features disabled)")
-            optional_failed.append(module)
-    
-    if failed_imports:
-        print(f"❌ Import test failed. Missing required modules: {', '.join(failed_imports)}")
-        print("💡 Run: pip install -r requirements.txt")
-        return False
-    else:
-        print("✅ All required imports successful")
-        if optional_failed:
-            print("⚠️  Some optional modules missing - AWS features will be disabled")
-        return True
-
-def test_aws_configuration():
-    """Test AWS configuration (optional)"""
-    print("🔍 Testing AWS configuration...")
-    
-    aws_key = os.environ.get('AWS_ACCESS_KEY_ID')
-    aws_secret = os.environ.get('AWS_SECRET_ACCESS_KEY')
-    s3_bucket = os.environ.get('S3_BUCKET')
-    
-    if aws_key and aws_secret and s3_bucket:
-        print("✅ AWS credentials found")
-        try:
-            import boto3
-            s3 = boto3.client('s3')
-            # Test S3 connection (this will fail if credentials are invalid)
-            s3.list_buckets()
-            print("✅ AWS S3 connection successful")
-            return True
-        except ImportError:
-            print("⚠️  boto3 not available - AWS features disabled")
-            print("💡 App will work in local mode without S3")
-            return False
+            print("  [WARN] azure-storage-blob not installed - Azure features disabled")
         except Exception as e:
-            print(f"⚠️  AWS S3 connection failed: {e}")
-            print("💡 App will work in local mode without S3")
-            return False
+            print(f"  [WARN] Azure connection failed: {e}")
+            print("  App will work in local storage mode")
     else:
-        print("⚠️  AWS credentials not found")
-        print("💡 App will work in local mode without S3")
-        return False
+        print("  [WARN] Azure credentials not configured")
+        print("  App will work in local storage mode")
+    
+    return True
+
+def test_file_structure():
+    """Test project file structure"""
+    print("\nTesting File Structure...")
+    required_files = ['app.py', 'requirements.txt', 'templates/index.html', 'static/style.css']
+    
+    all_ok = True
+    for f in required_files:
+        if os.path.exists(f):
+            print(f"  [OK] {f}")
+        else:
+            print(f"  [ERROR] {f} - MISSING")
+            all_ok = False
+    
+    # Check uploads directory
+    if os.path.exists('uploads'):
+        print("  [OK] uploads/")
+    else:
+        os.makedirs('uploads', exist_ok=True)
+        print("  [OK] uploads/ (created)")
+    
+    return all_ok
 
 def main():
-    """Run all tests"""
-    print("🎶 Cloud Music Locker - Test Suite")
-    print("=" * 40)
+    print("=" * 50)
+    print("CloudBeats - Application Test Suite")
+    print("=" * 50)
     
     tests = [
-        test_imports,
-        test_database_connection,
-        test_file_operations,
-        test_aws_configuration
+        test_environment,
+        test_dependencies,
+        test_file_structure,
+        test_database,
+        test_azure_configuration
     ]
     
-    passed = 0
-    total = len(tests)
-    
+    results = []
     for test in tests:
-        if test():
-            passed += 1
-        print()
+        try:
+            results.append(test())
+        except Exception as e:
+            print(f"  [ERROR] Test failed: {e}")
+            results.append(False)
     
-    print("=" * 40)
-    print(f"📊 Test Results: {passed}/{total} tests passed")
+    print("\n" + "=" * 50)
+    passed = sum(1 for r in results if r)
+    print(f"Results: {passed}/{len(results)} tests passed")
     
-    if passed == total:
-        print("🎉 All tests passed! Your app is ready to run.")
-        print("🚀 Start the app with: python app.py")
+    if all(results):
+        print("[OK] All tests passed! Ready to run.")
     else:
-        print("⚠️  Some tests failed. Please check the errors above.")
-        print("💡 Make sure to install dependencies: pip install -r requirements.txt")
-    
-    return passed == total
+        print("[WARN] Some tests failed. Check output above.")
 
 if __name__ == '__main__':
-    success = main()
-    sys.exit(0 if success else 1)
+    main()

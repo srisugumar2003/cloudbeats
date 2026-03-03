@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test upload functionality
+Test upload functionality for CloudBeats
 """
 
 import requests
@@ -8,49 +8,49 @@ import os
 
 def test_upload():
     """Test the upload functionality"""
-    print("🧪 Testing Upload Functionality...")
+    print("Testing Upload Functionality...")
     print("=" * 40)
     
     # Check if the app is running
     try:
         response = requests.get('http://localhost:5000')
         if response.status_code == 200:
-            print("✅ Application is running")
+            print("[OK] Application is running")
         else:
-            print(f"❌ Application returned status: {response.status_code}")
+            print(f"[ERROR] Application returned status: {response.status_code}")
             return False
     except Exception as e:
-        print(f"❌ Cannot connect to application: {e}")
+        print(f"[ERROR] Cannot connect to application: {e}")
         return False
     
     # Check if uploads directory exists
     uploads_dir = 'uploads'
     if os.path.exists(uploads_dir):
-        print("✅ Uploads directory exists")
+        print("[OK] Uploads directory exists")
     else:
-        print("❌ Uploads directory missing")
+        print("[WARN] Uploads directory missing")
         os.makedirs(uploads_dir, exist_ok=True)
-        print("✅ Created uploads directory")
+        print("[OK] Created uploads directory")
     
     # Check if database exists
     if os.path.exists('songs.db'):
-        print("✅ Database exists")
+        print("[OK] Database exists")
     else:
-        print("❌ Database missing - will be created on first run")
+        print("[WARN] Database missing - will be created on first run")
     
-    # Check .env file
+    # Check .env file for Azure credentials
     if os.path.exists('.env'):
-        print("✅ .env file exists")
+        print("[OK] .env file exists")
         with open('.env', 'r') as f:
             content = f.read()
-            if 'AWS_ACCESS_KEY_ID' in content and 'AWS_SECRET_ACCESS_KEY' in content:
-                print("✅ AWS credentials configured")
+            if 'AZURE_STORAGE_CONNECTION_STRING' in content and 'your_connection_string_here' not in content:
+                print("[OK] Azure Storage credentials configured")
             else:
-                print("❌ AWS credentials missing")
+                print("[WARN] Azure Storage credentials not configured - app will use local storage")
     else:
-        print("❌ .env file missing")
+        print("[WARN] .env file missing")
     
-    print("\n📋 Upload Test Instructions:")
+    print("\nUpload Test Instructions:")
     print("1. Make sure you have a test MP3 file")
     print("2. Open http://localhost:5000 in browser")
     print("3. Click 'Upload Song' button")

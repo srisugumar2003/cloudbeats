@@ -1,186 +1,94 @@
-# 🎶 Cloud Music Locker - Project Overview
+# CloudBeats - Project Overview
 
-## 🎯 What We Built
-
-A complete **Cloud Music Locker** application - your personal "Mini Spotify" that allows you to upload, store, and stream music from anywhere using cloud storage.
-
-## 🏗️ Architecture
+## Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Web Browser   │◄──►│   Flask App     │◄──►│   AWS S3        │
-│   (Frontend)    │    │   (EC2)         │    │   (Storage)     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                              │
-                              ▼
-                       ┌─────────────────┐
-                       │   SQLite DB     │
-                       │   (Metadata)    │
-                       └─────────────────┘
++------------------+     +------------------+     +---------------------+
+|   Web Browser    |<--->|   Flask App      |<--->| Azure Blob Storage  |
+|   (Frontend)     |     |   (Backend)      |     |   (Cloud Storage)   |
++------------------+     +--------+---------+     +---------------------+
+                                  |
+                         +--------+---------+
+                         |     SQLite DB     |
+                         |   (Metadata)      |
+                         +------------------+
 ```
 
-## 📁 Project Structure
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python 3.10, Flask 2.3 |
+| Frontend | HTML5, CSS3, Bootstrap 5, Font Awesome |
+| Database | SQLite |
+| Cloud Storage | Azure Blob Storage |
+| Deployment | Azure App Service (Linux, F1 Free Tier) |
+| WSGI Server | Gunicorn |
+
+## Features
+
+- **Music Upload** - Upload MP3, WAV, M4A, OGG files
+- **Cloud Storage** - Azure Blob Storage integration with local fallback
+- **Streaming** - Stream music directly from Azure Blob URLs
+- **Library Management** - View, play, and delete songs
+- **Dark/Light Theme** - Toggle between light blue and dark themes
+- **Responsive Design** - Works on desktop and mobile
+- **Song Metadata** - Title, artist, album info
+- **Environment Configuration** - Flexible Azure setup via `.env`
+
+## File Structure
 
 ```
-cloud-music-locker/
+cloudbeat/
 ├── app.py                 # Main Flask application
-├── templates/
-│   └── index.html        # Web interface with music player
+├── requirements.txt       # Python dependencies
+├── verify_azure.py        # Azure connection verification
+├── test_app.py            # Application test suite
+├── test_upload.py         # Upload functionality test
+├── deploy_to_azure.sh     # Azure App Service deployment script
+├── deploy.sh              # Linux local deployment script
+├── deploy.bat             # Windows local setup script
+├── env.example            # Environment variables template
+├── .env                   # Environment variables (git-ignored)
+├── .gitignore             # Git ignore rules
+├── songs.db               # SQLite database (git-ignored)
 ├── static/
-│   └── style.css         # Spotify-like styling
-├── uploads/              # Local file storage (fallback)
-├── songs.db              # SQLite database (auto-created)
-├── requirements.txt      # Python dependencies
-├── test_app.py          # Test suite
-├── demo.py              # Demo script
-├── deploy.sh            # Linux deployment script
-├── deploy.bat           # Windows deployment script
-├── env.example          # Environment variables template
-├── README.md            # Complete documentation
-└── PROJECT_OVERVIEW.md  # This file
+│   └── style.css          # Custom styles (light/dark theme)
+├── templates/
+│   └── index.html         # Main UI template
+└── uploads/               # Local file storage (git-ignored)
 ```
 
-## ✨ Key Features Implemented
+## How It Works
 
-### 🎵 Core Functionality
-- ✅ **File Upload** - Support for MP3, WAV, M4A, OGG formats
-- ✅ **Cloud Storage** - AWS S3 integration with local fallback
-- ✅ **Music Streaming** - HTML5 audio player in browser
-- ✅ **Music Library** - View all uploaded songs with metadata
-- ✅ **Song Management** - Delete songs from library
+### Upload Flow
+1. User selects an audio file and fills in metadata
+2. Flask saves the file locally to `uploads/`
+3. If Azure is configured, the file is uploaded to Azure Blob Storage
+4. Song metadata and Azure URL are stored in SQLite
 
-### 🎨 User Interface
-- ✅ **Modern Design** - Spotify-inspired dark theme
-- ✅ **Responsive Layout** - Works on desktop and mobile
-- ✅ **Interactive Player** - Built-in audio controls
-- ✅ **Upload Modal** - Clean file upload interface
-- ✅ **Song Table** - Organized music library view
+### Playback Flow
+1. User clicks Play on a song
+2. Flask looks up the Azure Blob URL (or local path as fallback)
+3. Browser streams the audio directly from the URL
 
-### 🔧 Technical Features
-- ✅ **Database Integration** - SQLite for metadata storage
-- ✅ **Error Handling** - Graceful fallbacks and user feedback
-- ✅ **Security** - File validation and secure uploads
-- ✅ **API Endpoints** - RESTful API for song management
-- ✅ **Environment Configuration** - Flexible AWS setup
+### Delete Flow
+1. User confirms deletion
+2. Flask deletes the blob from Azure Blob Storage
+3. Flask deletes the local file
+4. Flask removes the database record
 
-## 🚀 How to Use
+## Azure Free Tier Limits
 
-### 1. Quick Start (Local Mode)
-```bash
-# Install dependencies
-pip install -r requirements.txt
+| Service | Free Allowance |
+|---|---|
+| Blob Storage | 5 GB storage |
+| App Service (F1) | 1 GB RAM, 60 min/day CPU |
+| Bandwidth | 5 GB outbound/month |
 
-# Run the application
-python app.py
+## Status
 
-# Open browser to http://localhost:5000
-```
-
-### 2. AWS Cloud Mode
-```bash
-# Create .env file with AWS credentials
-cp env.example .env
-# Edit .env with your AWS keys
-
-# Run the application
-python app.py
-```
-
-### 3. Production Deployment
-```bash
-# Linux/EC2
-chmod +x deploy.sh
-./deploy.sh
-
-# Windows
-deploy.bat
-```
-
-## 🧪 Testing
-
-```bash
-# Run test suite
-python test_app.py
-
-# Run demo
-python demo.py
-```
-
-## 💰 Free Tier Compatibility
-
-### AWS Free Tier Limits (12 months)
-- **EC2 (t2.micro)**: 750 hours/month ✅
-- **S3**: 5GB storage, 20K GET, 2K PUT requests ✅
-- **Data Transfer**: 15GB out per month ✅
-- **EBS**: 30GB storage ✅
-
-### Estimated Usage
-- **Storage**: ~1,000 MP3s (5MB each) = 5GB
-- **Streaming**: ~500 hours of music per month
-- **Uploads**: ~2,000 songs per month
-
-**Result**: Perfect for personal use within free tier! 🎉
-
-## 🔮 Future Enhancements
-
-### Planned Features
-- [ ] **User Authentication** - Multi-user support
-- [ ] **Playlists** - Create and manage playlists
-- [ ] **Search & Filter** - Find songs by metadata
-- [ ] **Mobile App** - React Native companion
-- [ ] **Music Metadata** - Auto-extract from MP3 tags
-- [ ] **Streaming Optimization** - Adaptive bitrate
-- [ ] **Social Features** - Share playlists
-- [ ] **Offline Mode** - Download for offline listening
-
-### Technical Improvements
-- [ ] **Docker Support** - Containerized deployment
-- [ ] **CI/CD Pipeline** - Automated testing and deployment
-- [ ] **Monitoring** - Application performance monitoring
-- [ ] **Caching** - Redis for improved performance
-- [ ] **CDN Integration** - CloudFront for global distribution
-
-## 🎓 Learning Outcomes
-
-This project demonstrates:
-
-### Backend Development
-- **Flask Framework** - Web application development
-- **Database Design** - SQLite schema and queries
-- **File Handling** - Upload, validation, and storage
-- **API Design** - RESTful endpoints
-- **Error Handling** - Graceful failure management
-
-### Frontend Development
-- **HTML5 Audio** - Browser-based music player
-- **CSS Styling** - Modern, responsive design
-- **JavaScript** - Interactive user interface
-- **Bootstrap** - UI component framework
-
-### Cloud Computing
-- **AWS S3** - Object storage service
-- **EC2 Deployment** - Cloud server management
-- **Environment Configuration** - Secure credential management
-- **Free Tier Optimization** - Cost-effective architecture
-
-### DevOps
-- **Deployment Scripts** - Automated setup
-- **Testing** - Application validation
-- **Documentation** - Comprehensive guides
-- **Version Control** - Project organization
-
-## 🏆 Success Metrics
-
-- ✅ **Functional Application** - All core features working
-- ✅ **Modern UI** - Professional, user-friendly interface
-- ✅ **Cloud Integration** - AWS S3 storage working
-- ✅ **Free Tier Compatible** - Stays within AWS limits
-- ✅ **Well Documented** - Complete setup instructions
-- ✅ **Tested** - Automated test suite included
-- ✅ **Deployable** - Production-ready deployment scripts
-
-## 🎉 Conclusion
-
-The Cloud Music Locker is a complete, production-ready application that demonstrates modern web development practices, cloud computing integration, and user-centered design. It's perfect for personal use and serves as an excellent foundation for more advanced music streaming applications.
-
-**Ready to rock! 🎵**
+- **Cloud Integration** - Azure Blob Storage working
+- **Free Tier Compatible** - Stays within Azure limits
+- **Theme Support** - Light blue and dark mode
+- **Full-Width Layout** - Responsive design
