@@ -5,6 +5,7 @@ import uuid
 from werkzeug.utils import secure_filename
 from datetime import datetime
 import json
+import sys
 
 # Try to import azure-storage-blob
 try:
@@ -23,18 +24,20 @@ except ImportError:
     print("WARNING: python-dotenv not available. Using system environment variables only.")
 
 # Configure directories for production
+# This ensures that we use absolute paths regardless of where the app is started from
 base_dir = os.path.abspath(os.path.dirname(__file__))
 template_dir = os.path.join(base_dir, 'templates')
 static_dir = os.path.join(base_dir, 'static')
 
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
-app.secret_key = 'your-secret-key-change-this'
+app.secret_key = os.environ.get('SECRET_KEY', 'cloudbeats-secret-key-123')
 
 # Azure Storage setup
 AZURE_STORAGE_CONNECTION_STRING = os.environ.get('AZURE_STORAGE_CONNECTION_STRING')
 AZURE_STORAGE_CONTAINER_NAME = os.environ.get('AZURE_STORAGE_CONTAINER_NAME', 'music-container')
 
 # Initialize Azure Blob client
+blob_service_client = None
 if AZURE_AVAILABLE and AZURE_STORAGE_CONNECTION_STRING:
     try:
         blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
@@ -51,15 +54,14 @@ if AZURE_AVAILABLE and AZURE_STORAGE_CONNECTION_STRING:
         blob_service_client = None
         print(f"Warning: Failed to initialize Azure Blob client: {e}")
 else:
-    blob_service_client = None
     if not AZURE_AVAILABLE:
         print("Warning: azure-storage-blob not available. Azure functionality will be disabled.")
     else:
         print("Warning: Azure connection string not found. Azure functionality will be disabled.")
 
-# Database setup (SQLite for free tier)
-DB = "songs.db"
-UPLOAD_FOLDER = 'uploads'
+# Database setup
+DB = os.path.join(base_dir, 'songs.db')
+UPLOAD_FOLDER = os.path.join(base_dir, 'uploads')
 ALLOWED_EXTENSIONS = {'mp3', 'wav', 'm4a', 'ogg'}
 
 # Create upload folder if it doesn't exist
