@@ -20,6 +20,17 @@ uploads/
 *.swp
 *.swo
 
+# Build artifacts
+deploy.zip
+test_zip/
+test_zip_git/
+
+# Python local scripts
+check_db.py
+check_schema.py
+test_sql.py
+test_cosmos.py
+
 # OS
 Thumbs.db
 .DS_Store
