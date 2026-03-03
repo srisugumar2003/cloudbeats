@@ -1,21 +1,24 @@
-# Environment & Secrets
+# Environment variables (contains secrets!)
 .env
 
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
 venv/
 .venv/
 
 # Database
 *.db
 
-# Uploads
+# Uploads (large audio files)
 uploads/
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS
 Thumbs.db
